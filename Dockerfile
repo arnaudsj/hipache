@@ -1,36 +1,42 @@
-# This file describes how to build hipache into a runnable linux container with all dependencies installed
-# To build:
-# 1) Install docker (http://docker.io)
-# 2) Clone hipache repo if you haven't already: git clone https://github.com/dotcloud/hipache.git
-# 3) Build: cd hipache && docker build .
-# 4) Run: docker run -d <imageid>
-# See the documentation for more details about how to operate Hipache.
+FROM ubuntu:14.04
 
-# Latest Ubuntu LTS
-from    ubuntu:14.04
+MAINTAINER Sébastien Arnaud, sarnaud@opinionlab.com
 
-# Update
-run apt-get -y update
+# Since we don't plan to interact let's make this clean
+ENV DEBIAN_FRONTEND noninteractive
+
+# make sure apt is up to date
+RUN apt-get update
+
+# Upgrade anything that needs to be upgraded
+RUN apt-get upgrade -y
 
 # Install supervisor, node, npm and redis
-run apt-get -y install supervisor nodejs npm redis-server
+RUN apt-get -y install nodejs-legacy npm
 
 # Manually add hipache folder
-run mkdir ./hipache
-add . ./hipache
+RUN mkdir /srv/hipache
+ADD . /srv/hipache
+
+WORKDIR /srv/hipache
 
 # Then install it
-run npm install -g ./hipache --production
+RUN npm install --production
+
+# Setting up log folder
+RUN mkdir /var/log/hipache
 
 # This is provisional, as we don't honor it yet in hipache
-env NODE_ENV production
+ENV NODE_ENV development
+
+# Set this to ready /config/config_$env$.json
+ENV SETTINGS_FLAVOR development
 
 # Add supervisor conf
-add ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# add ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose hipache and redis
-expose  80
-expose  6379
+# Expose hipache
+EXPOSE 80
 
 # Start supervisor
-cmd ["supervisord", "-n"]
+CMD ["bin/hipache"]
