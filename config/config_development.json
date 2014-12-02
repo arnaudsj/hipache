@@ -10,8 +10,8 @@
         "httpKeepAlive": false
     },
     "http": {
-        "port": 80,
-        "bind": "127.0.0.1"
+        "port": 8800,
+        "bind": "0.0.0.0"
     },
     "driver": "redis://$REDIS_PORT_6379_TCP_ADDR:$REDIS_PORT_6379_TCP_PORT"
 }
